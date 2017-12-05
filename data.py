@@ -10,7 +10,6 @@ from sklearn.model_selection import train_test_split
 
 seed = 1
 
-
 def standardize(images, mean=None, std=None):
     if mean is None:
         # These values are available from all images.
@@ -24,8 +23,12 @@ def standardize(images, mean=None, std=None):
 
 def _create_datagen(images, masks, img_gen, mask_gen):
     img_iter = img_gen.flow(images, seed=seed)
-    # only hair
-    mask_iter = mask_gen.flow(np.expand_dims(masks[:, :, :, 0], axis=4),
+    
+    # masks.shape == (num, 128, 128, 3), we just need first byte to represent the mask, not 3 bytes
+    one_byte_masks = masks[:, :, :, 0]  # now shape is (num, 128, 128)
+    one_byte_masks = np.expand_dims(one_byte_masks, axis=4) # now shape is (num, 128, 128, 1)
+    
+    mask_iter = mask_gen.flow(one_byte_masks,
                               # use same seed to apply same augmentation with image
                               seed=seed)
 
@@ -33,6 +36,7 @@ def _create_datagen(images, masks, img_gen, mask_gen):
         while True:
             img = img_iter.next()
             mask = mask_iter.next()
+            
             yield img, mask
 
     return datagen
@@ -46,25 +50,27 @@ def load_data(img_file, mask_file):
                                                       masks,
                                                       test_size=0.2,
                                                       random_state=seed)
+    
 
     train_img_gen = ImageDataGenerator(
         featurewise_center=True,
         featurewise_std_normalization=True,
         # rescale=1. / 255,
-        rotation_range=20,
-        shear_range=0.2,
-        zoom_range=0.2,
+        # rotation_range=20,
+        # shear_range=0.2,
+        # zoom_range=0.2,
         # vertical_flip=True,  # debug
-        horizontal_flip=True,
+        # horizontal_flip=True,
     )
     train_img_gen.fit(images)
     train_mask_gen = ImageDataGenerator(
+        # mask is rescaled by divided to 255
         rescale=1. / 255,
-        rotation_range=20,
-        shear_range=0.2,
-        zoom_range=0.2,
+        # rotation_range=20,
+        # shear_range=0.2,
+        # zoom_range=0.2,
         # vertical_flip=True,  # debug
-        horizontal_flip=True,
+        # horizontal_flip=True,
     )
     train_gen = _create_datagen(X_train, Y_train,
                                 img_gen=train_img_gen,
@@ -77,6 +83,7 @@ def load_data(img_file, mask_file):
     )
     validation_img_gen.fit(images)
     validation_mask_gen = ImageDataGenerator(
+        # mask is rescaled by divided to 255
         rescale=1. / 255,
         horizontal_flip=True,
     )
@@ -84,7 +91,7 @@ def load_data(img_file, mask_file):
                                      img_gen=validation_img_gen,
                                      mask_gen=validation_mask_gen)
 
-    return train_gen, validation_gen, images.shape[1:3]
+    return train_gen, validation_gen, images.shape[1:3], X_train.shape[0], X_val.shape[0]
 
 
 def create_data(data_dir, out_dir, img_size):

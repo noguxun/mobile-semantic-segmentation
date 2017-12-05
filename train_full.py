@@ -13,12 +13,9 @@ from nets.MobileUNet import MobileUNet
 checkpoint_path = 'artifacts/checkpoint_weights.{epoch:02d}-{val_loss:.2f}.h5'
 trained_model_path = 'artifacts/model.h5'
 
-nb_train_samples = 1100
-nb_validation_samples = 220
-
 
 def train(img_file, mask_file, epochs, batch_size):
-    train_gen, validation_gen, img_shape = load_data(img_file, mask_file)
+    train_gen, validation_gen, img_shape, train_len, val_len = load_data(img_file, mask_file)
 
     img_height = img_shape[0]
     img_width = img_shape[1]
@@ -50,6 +47,21 @@ def train(img_file, mask_file, epochs, batch_size):
     checkpoint = callbacks.ModelCheckpoint(filepath=checkpoint_path,
                                            save_weights_only=True,
                                            save_best_only=True)
+    
+    '''
+        looks like we do have some legacy support issue
+        the steps_per_epoch and validation_steps is actually the number of sample
+        
+        legacy_generator_methods_support = generate_legacy_method_interface(
+            allowed_positional_args=['generator', 'steps_per_epoch', 'epochs'],
+            conversions=[('samples_per_epoch', 'steps_per_epoch'),
+                        ('val_samples', 'steps'),
+                        ('nb_epoch', 'epochs'),
+        ('nb_val_samples', 'validation_steps'),
+    '''
+    nb_train_samples = train_len 
+    nb_validation_samples = val_len
+    
 
     model.fit_generator(
         generator=train_gen(),
@@ -86,7 +98,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--batch_size',
         type=int,
-        default=16,
+        default=32,
     )
     args, _ = parser.parse_known_args()
 
