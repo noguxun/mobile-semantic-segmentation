@@ -15,6 +15,7 @@ from scipy.ndimage import imread
 from data import seed, standardize
 from loss import np_dice_coef
 from nets.MobileUNet import custom_objects
+import re
 
 SAVED_MODEL1 = 'artifacts/model.h5'
 
@@ -28,6 +29,11 @@ def main(img_file):
     img = imread(img_file)
     img = imresize(img, (img_size, img_size))
 
+    mask_file = re.sub('img2.jpg$', 'msk1.png',img_file)
+
+    mask = imread(mask_file)
+    mask = imresize(mask, (img_size, img_size))
+
     batched1 = img.reshape(1, img_size, img_size, 3).astype(float)
     pred1 = model1.predict(standardize(batched1)).reshape(img_size, img_size)
 
@@ -36,6 +42,8 @@ def main(img_file):
         plt.imshow(img)
         plt.subplot(2, 2, 2)
         plt.imshow(pred1)
+        plt.subplot(2, 2, 3)
+        plt.imshow(mask)
         plt.show()
 
 
