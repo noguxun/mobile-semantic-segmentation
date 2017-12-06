@@ -9,9 +9,13 @@ from data import load_data
 from learning_rate import create_lr_schedule
 from loss import dice_coef_loss, dice_coef, recall, precision
 from nets.MobileUNet import MobileUNet
+from nets.MobileUNet import custom_objects
+from keras.utils import CustomObjectScope
+from keras.models import load_model
 
 checkpoint_path = 'artifacts/checkpoint_weights.{epoch:02d}-{val_loss:.2f}.h5'
 trained_model_path = 'artifacts/model.h5'
+SAVED_MODEL1 = 'artifacts/model_old.h5'
 
 
 def train(img_file, mask_file, epochs, batch_size):
@@ -21,22 +25,27 @@ def train(img_file, mask_file, epochs, batch_size):
     img_width = img_shape[1]
     lr_base = 0.01 * (float(batch_size) / 16)
 
-    model = MobileUNet(input_shape=(img_height, img_width, 3),
-                       alpha=1,
-                       alpha_up=0.25)
+    if True:
+        with CustomObjectScope(custom_objects()):
+            model = load_model(SAVED_MODEL1)
+    
+    else:
+        model = MobileUNet(input_shape=(img_height, img_width, 3),
+                        alpha=1,
+                        alpha_up=0.25)
 
     model.summary()
     model.compile(
-        optimizer=optimizers.SGD(lr=0.0001, momentum=0.9),
+        optimizer=optimizers.SGD(lr=0.00001, momentum=0.9),
         # optimizer=Adam(lr=0.001),
         # optimizer=optimizers.RMSprop(),
         #loss=dice_coef_loss,
-        loss='mean_squared_error',
+        loss='mean_absolute_error',
         metrics=[
             dice_coef,
             recall,
             precision,
-            'binary_crossentropy',
+            'mean_absolute_error',
         ],
     )
 
@@ -62,7 +71,8 @@ def train(img_file, mask_file, epochs, batch_size):
     '''
     nb_train_samples = train_len 
     nb_validation_samples = val_len
-    
+   
+    print("training sample is " + str(nb_train_samples))
 
     model.fit_generator(
         generator=train_gen(),
@@ -71,7 +81,7 @@ def train(img_file, mask_file, epochs, batch_size):
         validation_data=validation_gen(),
         validation_steps=nb_validation_samples // batch_size,
         # callbacks=[tensorboard, checkpoint, csv_logger],
-        callbacks=[scheduler, tensorboard, checkpoint, csv_logger],
+        #callbacks=[scheduler, tensorboard, checkpoint, csv_logger],
     )
 
     model.save(trained_model_path)

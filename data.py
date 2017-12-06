@@ -48,7 +48,7 @@ def load_data(img_file, mask_file):
 
     X_train, X_val, Y_train, Y_val = train_test_split(images,
                                                       masks,
-                                                      test_size=0.2,
+                                                      test_size=0.1,
                                                       random_state=seed)
     
 
@@ -118,10 +118,10 @@ def create_data(data_dir, out_dir, img_size):
     X = []
     Y = []
     for img_path, mask_path in zip(img_files, mask_files):
-        img = imread(img_path)
+        img = imread(img_path,mode='RGB')
         img = imresize(img, (img_size, img_size))
 
-        mask = imread(mask_path)
+        mask = imread(mask_path, mode='RGB')
         mask = imresize(mask, (img_size, img_size), interp='nearest')
 
         # debug

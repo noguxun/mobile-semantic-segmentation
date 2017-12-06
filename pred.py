@@ -42,6 +42,8 @@ def main():
 
         dice = np_dice_coef(mask.astype(float) / 255, pred1)
         print('dice1: ', dice)
+        
+        print(pred1.shape)
 
 
         if True:

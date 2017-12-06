@@ -43,5 +43,8 @@ def dice_coef_loss(y_true, y_pred):
 def np_dice_coef(y_true, y_pred):
     tr = y_true.flatten()
     pr = y_pred.flatten()
+    
+    import pdb
+    pdb.set_trace()
 
     return (2. * np.sum(tr * pr) + smooth) / (np.sum(tr) + np.sum(pr) + smooth)
