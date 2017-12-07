@@ -20,12 +20,6 @@ trained_model_path = 'artifacts/model.h5'
 SAVED_MODEL1 = 'artifacts/model_transfer.h5'
 
 
-def loss_gu(y_true, y_pred):
-    # we want background to have more loss
-    adj = y_true + 1  # element 2: backgroud, element 1: forground
-    diff = y_pred - y_true
-    diff_adj = tf.multiply(diff, adj)
-    return K.mean(K.abs(diff_adj), axis=-1)
 
 def train(img_file, mask_file, epochs, batch_size):
     train_gen, validation_gen, img_shape, train_len, val_len = load_data(img_file, mask_file)

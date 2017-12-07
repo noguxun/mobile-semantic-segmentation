@@ -221,6 +221,7 @@ def custom_objects():
         'dice_coef': loss.dice_coef,
         'recall': loss.recall,
         'precision': loss.precision,
+        'loss_gu': loss.loss_gu
     }
 
 

@@ -80,7 +80,7 @@ def main(img_dir):
         dice = np_dice_coef(mask1, pred1)
         print('dice1: ', dice)
 
-        pred1 = beautify(pred1)
+        # pred1 = beautify(pred1)
         
         if True:
             plt.subplot(2, 2, 1)
