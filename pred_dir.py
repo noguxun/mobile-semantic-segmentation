@@ -17,6 +17,7 @@ from loss import np_dice_coef
 from nets.MobileUNet import custom_objects
 from glob import glob
 import re
+from nets.MobileUNet import *
 
 SAVED_MODEL1 = 'artifacts/model.h5'
 
@@ -28,20 +29,38 @@ def beautify(pred):
     
     for i in range(0, row):
         for j in range(0, col):
-            val = pred[i][j] * 200 
+            val = pred[i][j]
             if val > 1:
                 val = 1
+            elif val > 0.2:
+                val = 1
+            elif val < 0.0001:
+                val = 0
+            else:
+                val = 0.5
+
             pred[i][j] = val
     
     return pred
     
 def main(img_dir):
-    with CustomObjectScope(custom_objects()):
-        model1 = load_model(SAVED_MODEL1)
+    if True:
+        with CustomObjectScope(custom_objects()):
+            model = load_model(SAVED_MODEL1)
+    
+    else:
+        weight_file = 'artifacts/checkpoint_weights.73-0.01.h5'
+        model = MobileUNet(input_shape=(128, 128, 3),
+                       alpha=1,
+                       alpha_up=0.25)
+
+        model.summary()
+    
+        model.load_weights(weight_file, by_name=True)
         
     img_files = glob(img_dir + '/*.jpg')
 
-    for img_file in img_files:
+    for img_file in reversed(img_files):
         img = imread(img_file)
         img = imresize(img, (img_size, img_size))
 
@@ -50,16 +69,12 @@ def main(img_dir):
         mask = imread(mask_file)
        
         mask = imresize(mask, (img_size, img_size), interp='nearest')
-        mask = mask[:,:,0] 
+        mask1 = mask[:,:,0] 
         
         batched1 = img.reshape(1, img_size, img_size, 3).astype(float)
-        pred1 = model1.predict(standardize(batched1)).reshape(img_size, img_size)
+        pred1 = model.predict(standardize(batched1)).reshape(img_size, img_size)
       
-        mask1 = mask.astype(float) / 255 
-        
-        
-        import pdb
-        pdb.set_trace()
+        mask1 = mask1.astype(float) / 255 
         
         
         dice = np_dice_coef(mask1, pred1)
@@ -74,6 +89,8 @@ def main(img_dir):
             plt.imshow(pred1)
             plt.subplot(2, 2, 3)
             plt.imshow(mask)
+            plt.subplot(2, 2, 4)
+            plt.imshow(mask1)
             plt.show()
 
 

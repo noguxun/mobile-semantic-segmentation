@@ -12,11 +12,20 @@ from nets.MobileUNet import MobileUNet
 from nets.MobileUNet import custom_objects
 from keras.utils import CustomObjectScope
 from keras.models import load_model
+from keras import backend as K
+import tensorflow as tf
 
 checkpoint_path = 'artifacts/checkpoint_weights.{epoch:02d}-{val_loss:.2f}.h5'
 trained_model_path = 'artifacts/model.h5'
-SAVED_MODEL1 = 'artifacts/model_old.h5'
+SAVED_MODEL1 = 'artifacts/model_transfer.h5'
 
+
+def loss_gu(y_true, y_pred):
+    # we want background to have more loss
+    adj = y_true + 1  # element 2: backgroud, element 1: forground
+    diff = y_pred - y_true
+    diff_adj = tf.multiply(diff, adj)
+    return K.mean(K.abs(diff_adj), axis=-1)
 
 def train(img_file, mask_file, epochs, batch_size):
     train_gen, validation_gen, img_shape, train_len, val_len = load_data(img_file, mask_file)
@@ -25,7 +34,7 @@ def train(img_file, mask_file, epochs, batch_size):
     img_width = img_shape[1]
     lr_base = 0.01 * (float(batch_size) / 16)
 
-    if True:
+    if False:
         with CustomObjectScope(custom_objects()):
             model = load_model(SAVED_MODEL1)
     
@@ -40,12 +49,13 @@ def train(img_file, mask_file, epochs, batch_size):
         # optimizer=Adam(lr=0.001),
         # optimizer=optimizers.RMSprop(),
         #loss=dice_coef_loss,
-        loss='mean_absolute_error',
+        # loss='mean_absolute_error',
+        loss = loss_gu,
         metrics=[
             dice_coef,
             recall,
             precision,
-            'mean_absolute_error',
+            loss_gu,
         ],
     )
 

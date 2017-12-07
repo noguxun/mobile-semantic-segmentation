@@ -18,7 +18,6 @@ from nets.MobileUNet import custom_objects
 from nets.MobileUNet import MobileUNet
 import re
 
-SAVED_MODEL1 = 'artifacts/model.h5'
 
 img_size = 128
 
@@ -63,7 +62,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--weight_file',
         type=str,
-        default='artifacts/checkpoint_weights.74--0.99.h5',
+        default='artifacts/checkpoint_weights.55-0.02.h5',
     )
 
     args, _ = parser.parse_known_args()
