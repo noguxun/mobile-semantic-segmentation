@@ -26,20 +26,40 @@ img_size = 128
 def beautify(pred):
     row = pred.shape[0]
     col = pred.shape[1]
-    
+   
     for i in range(0, row):
         for j in range(0, col):
             val = pred[i][j]
-            if val > 1:
-                val = 1
-            elif val > 0.2:
-                val = 1
-            elif val < 0.0001:
+            if val <= 0.002:
                 val = 0
-            else:
+            elif val > 0.002 and val < 0.2:
                 val = 0.5
+            elif val >= 0.2:
+                val = 1
+            pred[i][j] = val
+    '''
+    for i in range(0, row):
+        for j in range(0, col):
+            val = pred[i][j]
+            if val < 0.00001:
+                val = 0
+            elif val < 0.0001:
+                val = 0.1 + val * 1000
+            elif val < 0.001:
+                val = 0.2 + val * 100 
+            elif val < 0.01:
+                val = 0.3 + val * 10
+            elif val < 0.1:
+                val = 0.4 + val
+            elif val < 0.2:
+                val = 0.5 + val
+            elif val < 0.5:
+                val = 0.5 + val
+            else:
+                val = val
 
             pred[i][j] = val
+    '''        
     
     return pred
     
@@ -60,7 +80,7 @@ def main(img_dir):
         
     img_files = glob(img_dir + '/*.jpg')
 
-    for img_file in reversed(img_files):
+    for img_file in img_files: #reversed(img_files):
         img = imread(img_file)
         img = imresize(img, (img_size, img_size))
 
@@ -78,17 +98,20 @@ def main(img_dir):
         
         
         dice = np_dice_coef(mask1, pred1)
+        
         print('dice1: ', dice)
+        print('sum ' ,np.sum(mask1))
+        print('shap ', mask1.shape)
 
-        # pred1 = beautify(pred1)
+        pred1 = beautify(pred1)
         
         if True:
             plt.subplot(2, 2, 1)
             plt.imshow(img)
             plt.subplot(2, 2, 2)
-            plt.imshow(pred1)
-            plt.subplot(2, 2, 3)
             plt.imshow(mask)
+            plt.subplot(2, 2, 3)
+            plt.imshow(pred1)
             plt.subplot(2, 2, 4)
             plt.imshow(mask1)
             plt.show()

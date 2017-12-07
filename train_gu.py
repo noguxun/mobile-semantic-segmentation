@@ -13,7 +13,7 @@ from nets.MobileUNet import custom_objects
 from keras.utils import CustomObjectScope
 from keras.models import load_model
 from keras import backend as K
-import tensorflow as tf
+from loss import *
 
 checkpoint_path = 'artifacts/checkpoint_weights.{epoch:02d}-{val_loss:.2f}.h5'
 trained_model_path = 'artifacts/model.h5'
@@ -27,15 +27,15 @@ def train(img_file, mask_file, epochs, batch_size):
     img_height = img_shape[0]
     img_width = img_shape[1]
     lr_base = 0.01 * (float(batch_size) / 16)
+    fresh_training = False #True
 
-    if False:
-        with CustomObjectScope(custom_objects()):
-            model = load_model(SAVED_MODEL1)
-    
-    else:
+    if fresh_training:
         model = MobileUNet(input_shape=(img_height, img_width, 3),
                         alpha=1,
                         alpha_up=0.25)
+    else:
+        with CustomObjectScope(custom_objects()):
+            model = load_model(SAVED_MODEL1)
 
     model.summary()
     model.compile(
@@ -43,13 +43,14 @@ def train(img_file, mask_file, epochs, batch_size):
         # optimizer=Adam(lr=0.001),
         # optimizer=optimizers.RMSprop(),
         #loss=dice_coef_loss,
-        # loss='mean_absolute_error',
-        loss = loss_gu,
+        loss='mean_absolute_error',
+        #loss = loss_gu,
         metrics=[
             dice_coef,
             recall,
             precision,
             loss_gu,
+            'mean_absolute_error'
         ],
     )
 
@@ -76,16 +77,20 @@ def train(img_file, mask_file, epochs, batch_size):
     nb_train_samples = train_len 
     nb_validation_samples = val_len
    
-    print("training sample is " + str(nb_train_samples))
+    print("training sample is ", nb_train_samples)
 
+    if fresh_training: 
+        cb_list=[scheduler,tensorboard, checkpoint, csv_logger]
+    else:
+        cb_list=[tensorboard, checkpoint, csv_logger]
+            
     model.fit_generator(
         generator=train_gen(),
         steps_per_epoch=nb_train_samples // batch_size,
         epochs=epochs,
         validation_data=validation_gen(),
         validation_steps=nb_validation_samples // batch_size,
-        # callbacks=[tensorboard, checkpoint, csv_logger],
-        #callbacks=[scheduler, tensorboard, checkpoint, csv_logger],
+        callbacks=cb_list,
     )
 
     model.save(trained_model_path)
