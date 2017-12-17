@@ -39,18 +39,20 @@ def train(img_file, mask_file, epochs, batch_size):
 
     model.summary()
     model.compile(
-        optimizer=optimizers.SGD(lr=0.00001, momentum=0.9),
+        #optimizer=optimizers.SGD(lr=0.000001, momentum=0.9),
+        optimizer=optimizers.Adam(lr=0.0001),
         # optimizer=Adam(lr=0.001),
         # optimizer=optimizers.RMSprop(),
-        #loss=dice_coef_loss,
-        loss='mean_absolute_error',
+        loss=dice_coef_loss,
+        #loss='mean_absolute_error',
         #loss = loss_gu,
         metrics=[
             dice_coef,
             recall,
             precision,
             loss_gu,
-            'mean_absolute_error'
+            dice_coef_loss,
+            #'mean_absolute_error'
         ],
     )
 
