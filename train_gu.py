@@ -19,7 +19,7 @@ checkpoint_path = 'artifacts/checkpoint_weights.{epoch:02d}-{val_loss:.2f}.h5'
 trained_model_path = 'artifacts/model.h5'
 SAVED_MODEL1 = 'artifacts/model_transfer.h5'
 
-
+img_size = 256
 
 def train(img_file, mask_file, epochs, batch_size):
     train_gen, validation_gen, img_shape, train_len, val_len = load_data(img_file, mask_file)
@@ -27,7 +27,7 @@ def train(img_file, mask_file, epochs, batch_size):
     img_height = img_shape[0]
     img_width = img_shape[1]
     lr_base = 0.01 * (float(batch_size) / 16)
-    fresh_training = False #True
+    fresh_training = True #False #True
 
     if fresh_training:
         model = MobileUNet(input_shape=(img_height, img_width, 3),
@@ -39,7 +39,7 @@ def train(img_file, mask_file, epochs, batch_size):
 
     model.summary()
     model.compile(
-        optimizer=optimizers.SGD(lr=0.00001, momentum=0.9),
+        optimizer=optimizers.SGD(lr=0.0001, momentum=0.9),
         # optimizer=Adam(lr=0.001),
         # optimizer=optimizers.RMSprop(),
         #loss=dice_coef_loss,
@@ -101,13 +101,13 @@ if __name__ == '__main__':
     parser.add_argument(
         '--img_file',
         type=str,
-        default='data/id_pack/images-128.npy',
+        default='data/id_pack/images-{}.npy'.format(img_size),
         help='image file as numpy format'
     )
     parser.add_argument(
         '--mask_file',
         type=str,
-        default='data/id_pack/masks-128.npy',
+        default='data/id_pack/masks-{}.npy'.format(img_size),
         help='mask file as numpy format'
     )
     parser.add_argument(

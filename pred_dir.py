@@ -5,6 +5,7 @@ import time
 import matplotlib.pyplot as plt
 import numpy as np
 import argparse
+import os
 
 from keras.models import load_model
 from keras.utils import CustomObjectScope
@@ -24,6 +25,8 @@ SAVED_MODEL1 = 'artifacts/model.h5'
 img_size = 128
 
 def beautify(pred):
+    return pred
+    
     row = pred.shape[0]
     col = pred.shape[1]
    
@@ -74,11 +77,14 @@ def main(img_dir):
                        alpha=1,
                        alpha_up=0.25)
 
-        model.summary()
     
         model.load_weights(weight_file, by_name=True)
         
+    model.summary()
+    
+
     img_files = glob(img_dir + '/*.jpg')
+    img_files = sorted(img_files, key=os.path.getmtime)
 
     for img_file in img_files: #reversed(img_files):
         img = imread(img_file)
