@@ -11,7 +11,7 @@ from scipy.ndimage import imread
 from sklearn.model_selection import train_test_split
 
 
-img_size = 256
+img_size = 192
 data_dir = "data/id_images"
 out_dir = "data/id_pack"
 img_array = []

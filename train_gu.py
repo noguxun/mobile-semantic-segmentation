@@ -19,7 +19,7 @@ checkpoint_path = 'artifacts/checkpoint_weights.{epoch:02d}-{val_loss:.2f}.h5'
 trained_model_path = 'artifacts/model.h5'
 SAVED_MODEL1 = 'artifacts/model_transfer.h5'
 
-img_size = 256
+img_size = 192
 
 def train(img_file, mask_file, epochs, batch_size):
     train_gen, validation_gen, img_shape, train_len, val_len = load_data(img_file, mask_file)
