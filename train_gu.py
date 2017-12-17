@@ -26,6 +26,9 @@ def train(img_file, mask_file, epochs, batch_size):
 
     img_height = img_shape[0]
     img_width = img_shape[1]
+    
+    print(img_height, img_width)
+    
     lr_base = 0.01 * (float(batch_size) / 16)
     fresh_training = True #False #True
 

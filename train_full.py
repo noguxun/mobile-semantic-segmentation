@@ -20,6 +20,8 @@ def train(img_file, mask_file, epochs, batch_size):
     img_height = img_shape[0]
     img_width = img_shape[1]
     lr_base = 0.01 * (float(batch_size) / 16)
+    
+    print(img_height, img_width)
 
     model = MobileUNet(input_shape=(img_height, img_width, 3),
                        alpha=1,
