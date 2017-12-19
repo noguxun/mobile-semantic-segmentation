@@ -16,12 +16,21 @@ from keras import backend as K
 from loss import *
 
 checkpoint_path = 'artifacts/checkpoint_weights.{epoch:02d}-{val_loss:.2f}.h5'
-trained_model_path = 'artifacts/model.h5'
 SAVED_MODEL1 = 'artifacts/model_transfer.h5'
 
 img_size = 192
 
-def train(img_file, mask_file, epochs, batch_size):
+def train(epochs, batch_size, img_size): 
+    
+    img_file ='data/id_pack/images-{}.npy'.format(img_size)
+    mask_file ='data/id_pack/masks-{}.npy'.format(img_size)
+    trained_model_path = 'artifacts/model-{}.h5'.format(img_size)
+   
+    print("training on image file:")
+    print(img_file)
+    print(mask_file)
+    
+    # Load the data
     train_gen, validation_gen, img_shape, train_len, val_len = load_data(img_file, mask_file)
 
     img_height = img_shape[0]
@@ -53,7 +62,6 @@ def train(img_file, mask_file, epochs, batch_size):
             dice_coef,
             recall,
             precision,
-            loss_gu,
             dice_coef_loss,
             'mean_absolute_error'
         ],
@@ -103,27 +111,21 @@ def train(img_file, mask_file, epochs, batch_size):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        '--img_file',
-        type=str,
-        default='data/id_pack/images-{}.npy'.format(img_size),
-        help='image file as numpy format'
-    )
-    parser.add_argument(
-        '--mask_file',
-        type=str,
-        default='data/id_pack/masks-{}.npy'.format(img_size),
-        help='mask file as numpy format'
-    )
+
     parser.add_argument(
         '--epochs',
         type=int,
-        default=250,
+        default=100,
     )
     parser.add_argument(
         '--batch_size',
         type=int,
         default=32,
+    )
+    parser.add_argument(
+        '--img_size',
+        type=int,
+        default=192,
     )
     args, _ = parser.parse_known_args()
 
