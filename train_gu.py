@@ -16,11 +16,12 @@ from keras import backend as K
 from loss import *
 
 checkpoint_path = 'artifacts/checkpoint_weights.{epoch:02d}-{val_loss:.2f}.h5'
-SAVED_MODEL1 = 'artifacts/model_transfer.h5'
+SAVED_MODEL = 'artifacts/model_transfer.h5'
 
-img_size = 192
 
 def train(epochs, batch_size, img_size): 
+    fresh_training = True
+    alpha_value = 0.9
     
     img_file ='data/id_pack/images-{}.npy'.format(img_size)
     mask_file ='data/id_pack/masks-{}.npy'.format(img_size)
@@ -39,15 +40,14 @@ def train(epochs, batch_size, img_size):
     print(img_height, img_width)
     
     lr_base = 0.01 * (float(batch_size) / 16)
-    fresh_training = True #False #True
 
     if fresh_training:
         model = MobileUNet(input_shape=(img_height, img_width, 3),
-                        alpha=1,
+                        alpha=alpha_value,
                         alpha_up=0.25)
     else:
         with CustomObjectScope(custom_objects()):
-            model = load_model(SAVED_MODEL1)
+            model = load_model(SAVED_MODEL)
 
     model.summary()
     model.compile(
